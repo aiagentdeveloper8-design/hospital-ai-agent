@@ -1,3 +1,8 @@
+if (localStorage.getItem("adminLoggedIn") !== "true") {
+
+    window.location.href = "/login.html";
+
+}
 const API_URL = "/appointments";
 
 async function loadAppointments() {
@@ -135,3 +140,10 @@ document.getElementById("search").addEventListener("keyup", function () {
 });
 
 loadAppointments();
+function logout() {
+
+    localStorage.removeItem("adminLoggedIn");
+
+    window.location.href = "/login.html";
+
+}
