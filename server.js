@@ -126,6 +126,35 @@ app.get("/appointments", (req, res) => {
 });
 
 /* ===========================
+   GET ALL DOCTORS
+=========================== */
+
+app.get("/doctors", (req, res) => {
+
+  db.all(
+    "SELECT * FROM doctors ORDER BY id ASC",
+
+    (err, rows) => {
+
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          error: err.message
+        });
+      }
+
+      res.json({
+        success: true,
+        total: rows.length,
+        doctors: rows
+      });
+
+    }
+
+  );
+
+});
+/* ===========================
    UPDATE APPOINTMENT
 =========================== */
 
