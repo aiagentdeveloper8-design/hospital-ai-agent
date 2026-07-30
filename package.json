@@ -17,9 +17,11 @@
   "author": "Muhammad",
   "license": "MIT",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
     "sqlite3": "^5.1.7"
   }
 }
