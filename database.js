@@ -1,22 +1,48 @@
 const sqlite3 = require("sqlite3").verbose();
 
 const db = new sqlite3.Database("./hospital.db", (err) => {
-  if (err) {
-    console.error("Database connection failed:", err.message);
-  } else {
+
+    if (err) {
+        console.error("❌ Database connection failed:", err.message);
+        return;
+    }
+
     console.log("✅ Connected to SQLite Database");
 
-    db.run(`
-      CREATE TABLE IF NOT EXISTS appointments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        phone TEXT,
-        doctor TEXT,
-        date TEXT,
-        time TEXT
-      )
-    `);
-  }
+    db.serialize(() => {
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS appointments (
+
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                name TEXT NOT NULL,
+
+                phone TEXT NOT NULL,
+
+                doctor TEXT NOT NULL,
+
+                date TEXT NOT NULL,
+
+                time TEXT NOT NULL,
+
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+
+            )
+        `);
+
+        db.run(`
+            CREATE INDEX IF NOT EXISTS idx_phone
+            ON appointments(phone)
+        `);
+
+        db.run(`
+            CREATE INDEX IF NOT EXISTS idx_date
+            ON appointments(date)
+        `);
+
+    });
+
 });
 
 module.exports = db;
