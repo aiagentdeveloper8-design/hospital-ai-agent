@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "nodemon server.js"
   },
   "keywords": [
     "hospital",
@@ -23,5 +23,8 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.3",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

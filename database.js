@@ -8,7 +8,9 @@ const db = new sqlite3.Database("./hospital.db", (err) => {
     }
 });
 
+
 db.serialize(() => {
+
 
     // ===========================
     // APPOINTMENTS TABLE
@@ -26,6 +28,8 @@ db.serialize(() => {
         )
     `);
 
+
+
     // ===========================
     // DOCTORS TABLE
     // ===========================
@@ -38,6 +42,8 @@ db.serialize(() => {
             available TEXT DEFAULT 'Yes'
         )
     `);
+
+
 
     // ===========================
     // DEFAULT DOCTORS
@@ -53,6 +59,80 @@ db.serialize(() => {
         (4,'Dr. Ali','Orthopedic','Yes')
     `);
 
+
+
+    // ===========================
+    // HOSPITAL SETTINGS TABLE
+    // ===========================
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS settings (
+            id INTEGER PRIMARY KEY,
+            hospital_name TEXT,
+            email TEXT,
+            phone TEXT,
+            ai_status TEXT DEFAULT 'Online'
+        )
+    `);
+
+
+
+    // ===========================
+    // DEFAULT SETTINGS
+    // ===========================
+
+    db.run(`
+        INSERT OR IGNORE INTO settings
+        (
+            id,
+            hospital_name,
+            email,
+            phone,
+            ai_status
+        )
+        VALUES
+        (
+            1,
+            'Dubai AI Hospital',
+            'admin@hospital.com',
+            '+971 50 0000000',
+            'Online'
+        )
+    `);
+
+
+
+    // ===========================
+    // ADMINS TABLE
+    // ===========================
+
+    db.run(`
+    CREATE TABLE IF NOT EXISTS admins (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        password TEXT
+    )
+    `);
+
+
+
+    // ===========================
+    // DEFAULT ADMIN
+    // ===========================
+
+    db.run(`
+    INSERT OR IGNORE INTO admins
+    (id, username, password)
+    VALUES
+    (
+        1,
+        'admin',
+        '$2b$10$9DokcnK51h.38Z6F77NA2e4tN6qYEeXv5dyr40BMQjKyNKJLL3iZ2'
+    )
+    `);
+
+
 });
+
 
 module.exports = db;
