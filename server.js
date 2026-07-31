@@ -56,7 +56,6 @@ app.get("/check-doctor-availability",(req,res)=>{
 
     const {date}=req.query;
 
-
     res.json({
 
         success:true,
@@ -79,7 +78,6 @@ app.get("/check-doctor-availability",(req,res)=>{
 /* ===========================
  SCHEDULE APPOINTMENT (VAPI)
 =========================== */
-
 
 app.post("/schedule-appointment",(req,res)=>{
 
@@ -248,6 +246,7 @@ app.get("/doctors",(req,res)=>{
 
         }
 
+
     );
 
 
@@ -255,6 +254,44 @@ app.get("/doctors",(req,res)=>{
 
 
 
+/* ===========================
+ VAPI DOCTORS TOOL (DYNAMIC)
+=========================== */
+
+
+app.get("/vapi-doctors",(req,res)=>{
+
+
+    db.all(
+
+        "SELECT name, specialization, available FROM doctors",
+
+        (err,rows)=>{
+
+
+            if(err){
+
+                return res.json({
+
+                    success:false,
+                    error:err.message
+
+                });
+
+            }
+
+
+
+            res.json(rows);
+
+
+        }
+
+
+    );
+
+
+});
 /* ===========================
  ADD DOCTOR
 =========================== */
@@ -330,6 +367,10 @@ app.post("/add-doctor",(req,res)=>{
 
 
 });
+
+
+
+
 /* ===========================
  UPDATE DOCTOR
 =========================== */
@@ -338,62 +379,62 @@ app.post("/add-doctor",(req,res)=>{
 app.post("/update-doctor",(req,res)=>{
 
 
-  const {
-      id,
-      name,
-      specialization,
-      available
-  } = req.body;
+    const {
+        id,
+        name,
+        specialization,
+        available
+    } = req.body;
 
 
 
-  db.run(
+    db.run(
 
-      `
-      UPDATE doctors
-      SET 
-      name=?,
-      specialization=?,
-      available=?
-      WHERE id=?
-      `,
+        `
+        UPDATE doctors
+        SET
+        name=?,
+        specialization=?,
+        available=?
+        WHERE id=?
+        `,
 
-      [
-          name,
-          specialization,
-          available,
-          id
-      ],
-
-
-      function(err){
+        [
+            name,
+            specialization,
+            available,
+            id
+        ],
 
 
-          if(err){
-
-              return res.json({
-
-                  success:false,
-                  error:err.message
-
-              });
-
-          }
+        function(err){
 
 
+            if(err){
 
-          res.json({
+                return res.json({
 
-              success:true,
-              message:"Doctor Updated Successfully"
+                    success:false,
+                    error:err.message
 
-          });
+                });
+
+            }
 
 
-      }
+
+            res.json({
+
+                success:true,
+                message:"Doctor Updated Successfully"
+
+            });
 
 
-  );
+        }
+
+
+    );
 
 
 });
@@ -402,52 +443,52 @@ app.post("/update-doctor",(req,res)=>{
 
 
 /* ===========================
-DELETE DOCTOR
+ DELETE DOCTOR
 =========================== */
 
 
 app.post("/delete-doctor",(req,res)=>{
 
 
-  const {id}=req.body;
+    const {id}=req.body;
 
 
 
-  db.run(
+    db.run(
 
-      "DELETE FROM doctors WHERE id=?",
+        "DELETE FROM doctors WHERE id=?",
 
-      [id],
-
-
-      function(err){
+        [id],
 
 
-          if(err){
-
-              return res.json({
-
-                  success:false,
-                  error:err.message
-
-              });
-
-          }
+        function(err){
 
 
+            if(err){
 
-          res.json({
+                return res.json({
 
-              success:true,
-              message:"Doctor Deleted Successfully"
+                    success:false,
+                    error:err.message
 
-          });
+                });
+
+            }
 
 
-      }
+
+            res.json({
+
+                success:true,
+                message:"Doctor Deleted Successfully"
+
+            });
 
 
-  );
+        }
+
+
+    );
 
 
 });
@@ -456,208 +497,198 @@ app.post("/delete-doctor",(req,res)=>{
 
 
 /* ===========================
-ADMIN LOGIN
+ ADMIN LOGIN
 =========================== */
 
 
 app.post("/admin-login",(req,res)=>{
 
 
-  const {
-      username,
-      password
-  } = req.body;
+    const {
+        username,
+        password
+    } = req.body;
 
 
 
-  if(!username || !password){
+    if(!username || !password){
 
-      return res.json({
+        return res.json({
 
-          success:false,
-          message:"Username and Password Required"
+            success:false,
+            message:"Username and Password Required"
 
-      });
+        });
 
-  }
-
-
-
-
-  db.get(
-
-      "SELECT * FROM admins WHERE username=?",
-
-      [username],
-
-
-      async(err,admin)=>{
-
-
-          if(err){
-
-              return res.json({
-
-                  success:false,
-                  error:err.message
-
-              });
-
-          }
+    }
 
 
 
-          if(!admin){
+    db.get(
 
-              return res.json({
+        "SELECT * FROM admins WHERE username=?",
 
-                  success:false,
-                  message:"Invalid Username"
-
-              });
-
-          }
+        [username],
 
 
-
-          const match = await bcrypt.compare(
-              password,
-              admin.password
-          );
+        async(err,admin)=>{
 
 
+            if(err){
 
-          if(!match){
+                return res.json({
 
-              return res.json({
+                    success:false,
+                    error:err.message
 
-                  success:false,
-                  message:"Invalid Password"
+                });
 
-              });
-
-          }
+            }
 
 
 
+            if(!admin){
 
-          const token = jwt.sign(
+                return res.json({
 
-              {
-                  id:admin.id,
-                  username:admin.username
-              },
+                    success:false,
+                    message:"Invalid Username"
 
-              SECRET,
+                });
 
-              {
-                  expiresIn:"24h"
-              }
-
-          );
+            }
 
 
 
-          res.json({
-
-              success:true,
-              message:"Login Successful",
-              token,
-
-              admin:{
-                  id:admin.id,
-                  username:admin.username
-              }
-
-          });
+            const match = await bcrypt.compare(
+                password,
+                admin.password
+            );
 
 
-      }
+
+            if(!match){
+
+                return res.json({
+
+                    success:false,
+                    message:"Invalid Password"
+
+                });
+
+            }
 
 
-  );
+
+            const token = jwt.sign(
+
+                {
+                    id:admin.id,
+                    username:admin.username
+                },
+
+                SECRET,
+
+                {
+                    expiresIn:"24h"
+                }
+
+            );
+
+
+
+            res.json({
+
+                success:true,
+                message:"Login Successful",
+                token,
+
+                admin:{
+                    id:admin.id,
+                    username:admin.username
+                }
+
+            });
+
+
+        }
+
+
+    );
 
 
 });
-
-
-
-
 /* ===========================
-DASHBOARD STATS
+ DASHBOARD STATS
 =========================== */
 
 
 app.get("/dashboard-stats",(req,res)=>{
 
 
-  db.get(
+    db.get(
 
-      "SELECT COUNT(*) AS totalAppointments FROM appointments",
+        "SELECT COUNT(*) AS totalAppointments FROM appointments",
 
-      (err,appointments)=>{
-
-
-          if(err){
-
-              return res.json({
-
-                  success:false,
-                  error:err.message
-
-              });
-
-          }
+        (err,appointments)=>{
 
 
+            if(err){
 
+                return res.json({
 
-          db.get(
+                    success:false,
+                    error:err.message
 
-              "SELECT COUNT(*) AS totalDoctors FROM doctors",
+                });
 
-              (err,doctors)=>{
-
-
-                  if(err){
-
-                      return res.json({
-
-                          success:false,
-                          error:err.message
-
-                      });
-
-                  }
+            }
 
 
 
+            db.get(
 
-                  res.json({
+                "SELECT COUNT(*) AS totalDoctors FROM doctors",
 
-                      success:true,
-
-                      totalAppointments:
-                      appointments.totalAppointments,
-
-                      totalDoctors:
-                      doctors.totalDoctors,
-
-                      aiStatus:"Online"
-
-                  });
+                (err,doctors)=>{
 
 
-              }
+                    if(err){
+
+                        return res.json({
+
+                            success:false,
+                            error:err.message
+
+                        });
+
+                    }
 
 
-          );
+
+                    res.json({
+
+                        success:true,
+
+                        totalAppointments:
+                        appointments.totalAppointments,
+
+                        totalDoctors:
+                        doctors.totalDoctors,
+
+                        aiStatus:"Online"
+
+                    });
 
 
-      }
+                }
+
+            );
 
 
-  );
+        }
+
+    );
 
 
 });
@@ -666,92 +697,95 @@ app.get("/dashboard-stats",(req,res)=>{
 
 
 /* ===========================
-UPDATE APPOINTMENT
+ UPDATE APPOINTMENT
 =========================== */
 
 
 app.post("/update-appointment",(req,res)=>{
 
 
-  const {
-      id,
-      name,
-      phone,
-      doctor,
-      date,
-      time
-  } = req.body;
+    const {
+        id,
+        name,
+        phone,
+        doctor,
+        date,
+        time
+    } = req.body;
 
 
 
-  if(!id || !name || !phone || !doctor || !date || !time){
+    if(!id || !name || !phone || !doctor || !date || !time){
 
-      return res.status(400).json({
+        return res.status(400).json({
 
-          success:false,
-          message:"All fields are required"
+            success:false,
+            message:"All fields are required"
 
-      });
+        });
 
-  }
-
-
-
-  db.run(
-
-      `
-      UPDATE appointments
-      SET
-      name=?,
-      phone=?,
-      doctor=?,
-      date=?,
-      time=?
-      WHERE id=?
-      `,
-
-
-      [
-          name,
-          phone,
-          doctor,
-          date,
-          time,
-          id
-      ],
-
-
-      function(err){
-
-
-          if(err){
-
-              return res.status(500).json({
-
-                  success:false,
-                  error:err.message
-
-              });
-
-          }
+    }
 
 
 
-          res.json({
+    db.run(
 
-              success:true,
-              message:"Appointment Updated Successfully"
+        `
+        UPDATE appointments
+        SET
+        name=?,
+        phone=?,
+        doctor=?,
+        date=?,
+        time=?
+        WHERE id=?
+        `,
 
-          });
+        [
+            name,
+            phone,
+            doctor,
+            date,
+            time,
+            id
+        ],
 
 
-      }
+        function(err){
 
 
-  );
+            if(err){
+
+                return res.status(500).json({
+
+                    success:false,
+                    error:err.message
+
+                });
+
+            }
+
+
+
+            res.json({
+
+                success:true,
+                message:"Appointment Updated Successfully"
+
+            });
+
+
+        }
+
+
+    );
 
 
 });
+
+
+
+
 /* ===========================
  CANCEL APPOINTMENT
 =========================== */
@@ -760,74 +794,72 @@ app.post("/update-appointment",(req,res)=>{
 app.post("/cancel-appointment",(req,res)=>{
 
 
-  const {phone}=req.body;
+    const {phone}=req.body;
 
 
 
-  if(!phone){
+    if(!phone){
 
-      return res.status(400).json({
+        return res.status(400).json({
 
-          success:false,
-          message:"Phone number is required"
+            success:false,
+            message:"Phone number is required"
 
-      });
+        });
 
-  }
-
-
-
-
-  db.run(
-
-      "DELETE FROM appointments WHERE phone=?",
-
-      [phone],
-
-
-      function(err){
-
-
-          if(err){
-
-              return res.status(500).json({
-
-                  success:false,
-                  error:err.message
-
-              });
-
-          }
+    }
 
 
 
+    db.run(
 
-          if(this.changes===0){
+        "DELETE FROM appointments WHERE phone=?",
 
-              return res.json({
-
-                  success:false,
-                  message:"Appointment not found"
-
-              });
-
-          }
+        [phone],
 
 
-
-          res.json({
-
-              success:true,
-              message:"Appointment Cancelled Successfully",
-              deleted:this.changes
-
-          });
+        function(err){
 
 
-      }
+            if(err){
+
+                return res.status(500).json({
+
+                    success:false,
+                    error:err.message
+
+                });
+
+            }
 
 
-  );
+
+            if(this.changes===0){
+
+                return res.json({
+
+                    success:false,
+                    message:"Appointment not found"
+
+                });
+
+            }
+
+
+
+            res.json({
+
+                success:true,
+                message:"Appointment Cancelled Successfully",
+                deleted:this.changes
+
+            });
+
+
+        }
+
+
+    );
 
 
 });
@@ -835,47 +867,46 @@ app.post("/cancel-appointment",(req,res)=>{
 
 
 
-
 /* ===========================
-GET SETTINGS
+ GET SETTINGS
 =========================== */
 
 
 app.get("/settings",(req,res)=>{
 
 
-  db.get(
+    db.get(
 
-      "SELECT * FROM settings WHERE id=1",
+        "SELECT * FROM settings WHERE id=1",
 
-      (err,row)=>{
-
-
-          if(err){
-
-              return res.json({
-
-                  success:false,
-                  error:err.message
-
-              });
-
-          }
+        (err,row)=>{
 
 
+            if(err){
 
-          res.json({
+                return res.json({
 
-              success:true,
-              settings:row
+                    success:false,
+                    error:err.message
 
-          });
+                });
+
+            }
 
 
-      }
+
+            res.json({
+
+                success:true,
+                settings:row
+
+            });
 
 
-  );
+        }
+
+
+    );
 
 
 });
@@ -883,75 +914,68 @@ app.get("/settings",(req,res)=>{
 
 
 
-
-
 /* ===========================
-UPDATE SETTINGS
+ UPDATE SETTINGS
 =========================== */
 
 
 app.post("/update-settings",(req,res)=>{
 
 
-  const {
-
-      hospital_name,
-      email,
-      phone
-
-  } = req.body;
+    const {
+        hospital_name,
+        email,
+        phone
+    } = req.body;
 
 
 
+    db.run(
 
-  db.run(
+        `
+        UPDATE settings
+        SET
+        hospital_name=?,
+        email=?,
+        phone=?
+        WHERE id=1
+        `,
 
-      `
-      UPDATE settings
-      SET
-      hospital_name=?,
-      email=?,
-      phone=?
-      WHERE id=1
-      `,
-
-
-      [
-          hospital_name,
-          email,
-          phone
-      ],
+        [
+            hospital_name,
+            email,
+            phone
+        ],
 
 
-      function(err){
+        function(err){
 
 
-          if(err){
+            if(err){
 
-              return res.json({
+                return res.json({
 
-                  success:false,
-                  error:err.message
+                    success:false,
+                    error:err.message
 
-              });
+                });
 
-          }
+            }
 
 
 
+            res.json({
 
-          res.json({
+                success:true,
+                message:"Settings Updated Successfully"
 
-              success:true,
-              message:"Settings Updated Successfully"
-
-          });
-
-
-      }
+            });
 
 
-  );
+        }
+
+
+    );
 
 
 });
@@ -959,19 +983,16 @@ app.post("/update-settings",(req,res)=>{
 
 
 
-
-
 /* ===========================
-SERVER START
+ SERVER START
 =========================== */
 
 
 const PORT = process.env.PORT || 3000;
 
 
-
 app.listen(PORT,()=>{
 
-  console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 
 });
