@@ -1,24 +1,38 @@
-document.getElementById("loginForm").addEventListener("submit", function (e) {
+document.getElementById("loginForm").addEventListener("submit", async function (e) {
 
     e.preventDefault();
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
 
-    // Demo Admin Login
-    if (
-        email === "admin@hospital.com" &&
-        password === "123456"
-    ) {
+    const res = await fetch("/admin-login", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            username,
+            password
+        })
+
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
 
         localStorage.setItem("adminLoggedIn", "true");
+        localStorage.setItem("token", data.token);
 
-        window.location.href = "/";
+        window.location.href = "/index.html";
 
     } else {
 
         document.getElementById("error").innerText =
-            "Invalid Email or Password";
+            data.message || "Login Failed";
 
     }
 
