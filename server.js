@@ -322,6 +322,10 @@ app.post("/add-doctor",(req,res)=>{
 
 
     db.run(
+    
+
+    
+
 
         `
         INSERT INTO doctors
@@ -463,31 +467,20 @@ app.post("/save-doctor-schedule", (req, res) => {
 
     }
 
-    db.run(
+    db.get(
 
         `
-        INSERT INTO doctor_schedules
-        (
-            doctor_id,
-            day,
-            start_time,
-            end_time,
-            slot_duration
-        )
-        VALUES (?,?,?,?,?)
+        SELECT id
+        FROM doctor_schedules
+        WHERE doctor_id=? AND day=?
         `,
 
-        [
-            doctor_id,
-            day,
-            start_time,
-            end_time,
-            slot_duration || 30
-        ],
+        [doctor_id, day],
 
-        function (err) {
+        (err, row) => {
 
             if (err) {
+
 
                 return res.status(500).json({
                     success: false,
@@ -496,18 +489,65 @@ app.post("/save-doctor-schedule", (req, res) => {
 
             }
 
-            res.json({
-                success: true,
-                message: "Doctor Schedule Saved Successfully",
-                scheduleId: this.lastID
-            });
+        
+
+            if (row) {
+
+                return res.json({
+                    success: false,
+                    message: "Schedule already exists for this doctor on this day"
+                });
+
+            }
+
+            db.run(
+
+                `
+                INSERT INTO doctor_schedules
+                (
+                    doctor_id,
+                    day,
+                    start_time,
+                    end_time,
+                    slot_duration
+                )
+                VALUES (?,?,?,?,?)
+                `,
+
+                [
+                    doctor_id,
+                    day,
+                    start_time,
+                    end_time,
+                    slot_duration || 30
+                ],
+
+                function (err) {
+
+                    if (err) {
+
+                        return res.status(500).json({
+                            success: false,
+                            error: err.message
+                        });
+
+                    }
+
+                    res.json({
+                        success: true,
+                        message: "Doctor Schedule Saved Successfully",
+                        scheduleId: this.lastID
+                    });
+
+                }
+
+            );
 
         }
 
     );
 
 });
-
 /* ===========================
  GET DOCTOR SCHEDULE
 =========================== */
