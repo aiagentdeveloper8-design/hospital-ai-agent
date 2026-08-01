@@ -59,6 +59,44 @@ db.serialize(() => {
         (4,'Dr. Ali','Orthopedic','Yes')
     `);
 
+// ===========================
+// DOCTOR SCHEDULES TABLE
+// ===========================
+
+db.run(`
+    CREATE TABLE IF NOT EXISTS doctor_schedules (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        doctor_id INTEGER NOT NULL,
+        day TEXT NOT NULL,
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
+        slot_duration INTEGER DEFAULT 30,
+        status TEXT DEFAULT 'active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (doctor_id) REFERENCES doctors(id)
+    )
+`);
+
+// ===========================
+// APPOINTMENT SLOTS TABLE
+// ===========================
+
+db.run(`
+    CREATE TABLE IF NOT EXISTS appointment_slots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        appointment_id INTEGER,
+        doctor_id INTEGER NOT NULL,
+        appointment_date TEXT NOT NULL,
+        slot_time TEXT NOT NULL,
+        status TEXT DEFAULT 'booked',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (doctor_id) REFERENCES doctors(id),
+        FOREIGN KEY (appointment_id) REFERENCES appointments(id)
+    )
+`);
+
+
+
 
 
     // ===========================
