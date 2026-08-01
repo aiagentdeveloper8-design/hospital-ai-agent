@@ -440,6 +440,136 @@ app.post("/update-doctor",(req,res)=>{
 });
 
 
+/* ===========================
+ SAVE DOCTOR SCHEDULE
+=========================== */
+
+app.post("/save-doctor-schedule", (req, res) => {
+
+    const {
+        doctor_id,
+        day,
+        start_time,
+        end_time,
+        slot_duration
+    } = req.body;
+
+    if (!doctor_id || !day || !start_time || !end_time) {
+
+        return res.status(400).json({
+            success: false,
+            message: "All fields are required"
+        });
+
+    }
+
+    db.run(
+
+        `
+        INSERT INTO doctor_schedules
+        (
+            doctor_id,
+            day,
+            start_time,
+            end_time,
+            slot_duration
+        )
+        VALUES (?,?,?,?,?)
+        `,
+
+        [
+            doctor_id,
+            day,
+            start_time,
+            end_time,
+            slot_duration || 30
+        ],
+
+        function (err) {
+
+            if (err) {
+
+                return res.status(500).json({
+                    success: false,
+                    error: err.message
+                });
+
+            }
+
+            res.json({
+                success: true,
+                message: "Doctor Schedule Saved Successfully",
+                scheduleId: this.lastID
+            });
+
+        }
+
+    );
+
+});
+
+/* ===========================
+ GET DOCTOR SCHEDULE
+=========================== */
+
+app.get("/doctor-schedule", (req, res) => {
+
+    const { doctor_id } = req.query;
+
+    if (!doctor_id) {
+
+        return res.status(400).json({
+            success: false,
+            message: "doctor_id is required"
+        });
+
+    }
+
+    db.all(
+
+        `
+        SELECT *
+        FROM doctor_schedules
+        WHERE doctor_id=?
+        ORDER BY
+        CASE day
+            WHEN 'Monday' THEN 1
+            WHEN 'Tuesday' THEN 2
+            WHEN 'Wednesday' THEN 3
+            WHEN 'Thursday' THEN 4
+            WHEN 'Friday' THEN 5
+            WHEN 'Saturday' THEN 6
+            WHEN 'Sunday' THEN 7
+        END
+        `,
+
+        [doctor_id],
+
+        (err, rows) => {
+
+            if (err) {
+
+                return res.status(500).json({
+                    success: false,
+                    error: err.message
+                });
+
+            }
+
+            res.json({
+                success: true,
+                total: rows.length,
+                schedules: rows
+            });
+
+        }
+
+    );
+
+});
+
+
+
 
 
 /* ===========================
